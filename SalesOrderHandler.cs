@@ -333,100 +333,96 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             var customer = salesOrderEntity.GetAttributeValue<EntityReference>("customerid") != null
                 ? salesOrderEntity.GetAttributeValue<EntityReference>("customerid")
                 : null;
-            var customerID = String.Empty;
-            var streetName = String.Empty;
-            var cityName = String.Empty;
-            var zipCode = String.Empty;
-            var province = String.Empty;
-            var country = String.Empty;
-            var tin = String.Empty;
-            var customerType = new OptionSetValue(100000000);
 
             //Retrieve Contact record from Customer ID field value
-            if (customer != null && customer.LogicalName == "contact")
-            {
-                EntityCollection contactRecords = CommonHandler.RetrieveRecordsByOneValue("contact", "contactid", customer.Id, _organizationService, null, OrderType.Ascending,
-                    new[] { "gsc_tin", "gsc_countryid", "gsc_provinceid", "gsc_cityid", "address1_line1", "address1_postalcode", "gsc_customerid" });
-
-                _tracingService.Trace("Contact records count " + String.Concat(contactRecords.Entities.Count));
-
-                if (contactRecords != null && contactRecords.Entities.Count > 0)
-                {
-                    _tracingService.Trace("Retrieved {" + contactRecords.Entities.Count + "}: " + "Retrieving Contact...");
-
-                    Entity contact = contactRecords.Entities[0];
-
-                    customerID = contact.Contains("gsc_customerid")
-                        ? contact.GetAttributeValue<String>("gsc_customerid")
-                        : String.Empty;
-                    streetName = contact.Contains("address1_line1")
-                        ? contact.GetAttributeValue<String>("address1_line1")
-                        : String.Empty;
-                    cityName = contact.GetAttributeValue<EntityReference>("gsc_cityid") != null
-                        ? contact.GetAttributeValue<EntityReference>("gsc_cityid").Name
-                        : String.Empty;
-                    zipCode = contact.Contains("address1_postalcode")
-                        ? contact.GetAttributeValue<String>("address1_postalcode")
-                        : String.Empty;
-                    province = contact.GetAttributeValue<EntityReference>("gsc_provinceid") != null
-                        ? contact.GetAttributeValue<EntityReference>("gsc_provinceid").Name
-                        : String.Empty;
-                    country = contact.GetAttributeValue<EntityReference>("gsc_countryid") != null
-                        ? contact.GetAttributeValue<EntityReference>("gsc_countryid").Name
-                        : String.Empty;
-                    tin = contact.Contains("gsc_tin") ? contact.GetAttributeValue<String>("gsc_tin") : String.Empty;
-                }
-            }
-            else if (customer != null && customer.LogicalName == "account")
-            {
-                EntityCollection contactRecords = CommonHandler.RetrieveRecordsByOneValue("account", "accountid", customer.Id, _organizationService, null, OrderType.Ascending,
-                    new[] { "gsc_tin", "gsc_countryid", "gsc_provinceid", "gsc_cityid", "address1_line1", "address1_postalcode", "accountnumber", "gsc_customertype" });
-
-                _tracingService.Trace("Contact records count " + String.Concat(contactRecords.Entities.Count));
-
-                if (contactRecords != null && contactRecords.Entities.Count > 0)
-                {
-                    _tracingService.Trace("Retrieved {" + contactRecords.Entities.Count + "}: " + "Retrieving Contact...");
-
-                    Entity contact = contactRecords.Entities[0];
-
-                    customerID = contact.Contains("accountnumber")
-                        ? contact.GetAttributeValue<String>("accountnumber")
-                        : String.Empty;
-                    streetName = contact.Contains("address1_line1")
-                        ? contact.GetAttributeValue<String>("address1_line1")
-                        : String.Empty;
-                    cityName = contact.GetAttributeValue<EntityReference>("gsc_cityid") != null
-                        ? contact.GetAttributeValue<EntityReference>("gsc_cityid").Name
-                        : String.Empty;
-                    zipCode = contact.Contains("address1_postalcode")
-                        ? contact.GetAttributeValue<String>("address1_postalcode")
-                        : String.Empty;
-                    province = contact.GetAttributeValue<EntityReference>("gsc_provinceid") != null
-                        ? contact.GetAttributeValue<EntityReference>("gsc_provinceid").Name
-                        : String.Empty;
-                    country = contact.GetAttributeValue<EntityReference>("gsc_countryid") != null
-                        ? contact.GetAttributeValue<EntityReference>("gsc_countryid").Name
-                        : String.Empty;
-                    tin = contact.Contains("gsc_tin") ? contact.GetAttributeValue<String>("gsc_tin") : String.Empty;
-                    customerType = contact.Contains("gsc_customertype")
-                        ? new OptionSetValue(contact.GetAttributeValue<OptionSetValue>("gsc_customertype").Value + 1)
-                        : customerType;
-                }
-            }
-
             if (customer != null)
             {
+
+                Entity customer = new Entity();
+                var customerID = String.Empty;
+                var customerType = new OptionSetValue(100000000);
+
+                if (customer.LogicalName == "contact")
+                {
+                    EntityCollection contactRecords = CommonHandler.RetrieveRecordsByOneValue("contact", "contactid", customer.Id, _organizationService, null, OrderType.Ascending,
+                        new[] { "gsc_tin", "gsc_countryid", "gsc_provinceid", "gsc_cityid", "address1_line1", "address1_postalcode", "gsc_customerid" });
+
+                    _tracingService.Trace("Contact records count " + String.Concat(contactRecords.Entities.Count));
+
+                    if (contactRecords != null && contactRecords.Entities.Count > 0)
+                    {
+                        _tracingService.Trace("Retrieved {" + contactRecords.Entities.Count + "}: " + "Retrieving Contact...");
+
+                        customer = contactRecords.Entities[0];
+
+                        customerID = customer.Contains("gsc_customerid")
+                            ? customer.GetAttributeValue<String>("gsc_customerid")
+                            : String.Empty;
+                    }
+                }
+                else if (customer.LogicalName == "account")
+                {
+                    EntityCollection contactRecords = CommonHandler.RetrieveRecordsByOneValue("account", "accountid", customer.Id, _organizationService, null, OrderType.Ascending,
+                        new[] { "gsc_tin", "gsc_countryid", "gsc_provinceid", "gsc_cityid", "address1_line1", "address1_postalcode", "accountnumber", "gsc_customertype" });
+
+                    _tracingService.Trace("Contact records count " + String.Concat(contactRecords.Entities.Count));
+
+                    if (contactRecords != null && contactRecords.Entities.Count > 0)
+                    {
+                        _tracingService.Trace("Retrieved {" + contactRecords.Entities.Count + "}: " + "Retrieving Contact...");
+
+                        customer = contactRecords.Entities[0];
+
+                        customerID = contact.Contains("accountnumber")
+                            ? contact.GetAttributeValue<String>("accountnumber")
+                            : String.Empty;
+                        customerType = contact.Contains("gsc_customertype")
+                            ? new OptionSetValue(contact.GetAttributeValue<OptionSetValue>("gsc_customertype").Value + 1)
+                            : customerType;
+                    }
+                }
+
                 //sales information
                 salesOrderEntity["gsc_customerid"] = customerID;
                 salesOrderEntity["gsc_customertype"] = customerType;
-                salesOrderEntity["gsc_address"] = streetName + ", " + cityName + ", " + province + ", " + country + " " + zipCode;
-                salesOrderEntity["gsc_tin"] = tin;
+                salesOrderEntity["gsc_address"] = GetCustomerAddress(customer);
+                salesOrderEntity["gsc_tin"] = GetCustomerTin(customer);
             }
 
             return salesOrderEntity;
         }
 
+        private String GetCustomerAddress(Entity customer)
+        {
+            var streetName = String.Empty;
+            var cityName = String.Empty;
+            var zipCode = String.Empty;
+            var province = String.Empty;
+            var country = String.Empty;
+
+            streetName = customer.Contains("address1_line1")
+                ? customer.GetAttributeValue<String>("address1_line1")
+                : String.Empty;
+            cityName = contact.GetAttributeValue<EntityReference>("gsc_cityid") != null
+                ? customer.GetAttributeValue<EntityReference>("gsc_cityid").Name
+                : String.Empty;
+            zipCode = contact.Contains("address1_postalcode")
+                ? customer.GetAttributeValue<String>("address1_postalcode")
+                : String.Empty;
+            province = contact.GetAttributeValue<EntityReference>("gsc_provinceid") != null
+                ? customer.GetAttributeValue<EntityReference>("gsc_provinceid").Name
+                : String.Empty;
+            country = contact.GetAttributeValue<EntityReference>("gsc_countryid") != null
+                ? customer.GetAttributeValue<EntityReference>("gsc_countryid").Name
+                : String.Empty;
+
+            return streetName + ", " + cityName + ", " + province + ", " + country + " " + zipCode;
+        }
+
+        private String GetCustomerTin(Entity customer)
+        {
+            return customer.Contains("gsc_tin") ? customer.GetAttributeValue<String>("gsc_tin") : String.Empty;
+        }
         public void PopulateCustomerInfo(Entity salesOrderEntity)
         {
             var customer = salesOrderEntity.GetAttributeValue<EntityReference>("customerid") != null
