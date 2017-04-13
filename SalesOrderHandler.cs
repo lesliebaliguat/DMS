@@ -225,6 +225,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             _tracingService.Trace("Ended ReplicateQuoteDiscount method..");
             return salesOrderEntity;
         }
+
         public Entity ReplicateQuoteCharges(Entity salesOrderEntity)
         {
             _tracingService.Trace("Started ReplicateQuoteCharges method..");
@@ -298,7 +299,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
                 if (vehicleEntity.GetAttributeValue<EntityReference>("gsc_taxid") == null || vehicleEntity.Contains("gsc_taxrate") == false)
                     throw new InvalidPluginExecutionException("Cannot proceed with your transaction.\n Please setup tax for Product Catalog.");
-
             }
         }
         public void CheckifCustomerHasTax(Entity salesOrderEntity)
@@ -952,7 +952,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             salesOrderEntity["gsc_discountamountfinanced"] = new Money(AFAmount);
             salesOrderEntity["gsc_discount"] = new Money(UPAmount);
 
-
             _tracingService.Trace("Ending ValidateDiscounts Method...");
             return salesOrderEntity;
         }
@@ -1060,6 +1059,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
             return salesOrderEntity;
         }
+
         private void ClearInsuranceInformation(Entity salesOrderEntity)
         {
             Entity orderToUpdate = _organizationService.Retrieve(salesOrderEntity.LogicalName, salesOrderEntity.Id,
@@ -1335,8 +1335,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 {
                     var financingTermId = CommonHandler.GetEntityReferenceIdSafe(financingSchemeDetail, "gsc_financingtermid");
 
-
-
                     monthlyAmortization["gsc_orderid"] = new EntityReference("salesorder", salesOrderEntity.Id);
                     monthlyAmortization["gsc_financingtermid"] = new EntityReference("gsc_sls_financingterm", financingTermId);
                     monthlyAmortization["gsc_ordermonthlyamortizationpn"] = string.Format("{0:0,0.00}", ComputeForMonthlyAmortization(salesOrderEntity, financingSchemeDetail));
@@ -1436,7 +1434,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             double interestRate = schemeEntity.Contains("gsc_interestrate")
                 ? schemeEntity.GetAttributeValue<double>("gsc_interestrate")
                 : 0;
-
 
             double PV = (amountfinanced * (1 + (dealerRate / 100))) - (double)afDiscount;
 
@@ -1543,8 +1540,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 salesOrderEntity["gsc_totalamountfinanced"] = new Money(0);
             }
 
-
-
             //ADDED BY: JGC_12192016
             salesOrderEntity = ComputeVAT(salesOrderEntity);
             //throw new InvalidPluginExecutionException("test");
@@ -1613,9 +1608,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             {
                 salesOrderEntity["gsc_totalcashoutlay"] = new Money(totalCashOutlay);
             }
-    
-
-            
 
             if (message.Equals("Update"))
             {
@@ -1644,9 +1636,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 _tracingService.Trace("Started CreateRequirementChecklist method - Bank id is not null ...");
 
                 var bankid = orderEntity.GetAttributeValue<EntityReference>("gsc_bankid").Id;
-
-                
-
 
                 var DocumentCondition = new List<ConditionExpression>
                     {
@@ -1678,13 +1667,12 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
                         _organizationService.Create(requirementEntity);
                     }
-                    
                 }
             }
+
             if(message == "Create")
                 CreateInternalDocumentChecklist(orderEntity);
             
-
             _tracingService.Trace("Ended CreateRequirementChecklist method ...");
 
             return orderEntity;
@@ -1720,7 +1708,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     _organizationService.Create(requirementEntity);
                     _tracingService.Trace("Created document record...");
                 }
-
             }
         }
 
@@ -1781,7 +1768,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
             _organizationService.Update(salesOrderEntity);
             _tracingService.Trace("Update successful. Ending SetStatus method..");
-
         }
 
         //Created By: Leslie Baliguat, Created On: 5/10/2016
@@ -1852,8 +1838,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
                     var isAllocated = CheckifAllocated(inventoryEntity);
 
-                    //if (!isAllocated)
-                   // {
                         _tracingService.Trace("Proceed in Allocation ...");
 
                         Entity allocatedVehicle = new Entity("gsc_iv_allocatedvehicle");
@@ -1891,7 +1875,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
                         _tracingService.Trace("Ended AllocateVehicle Method.");
                         return allocatedVehicle;
-                   // }
                 }
             }
             return null;
@@ -2067,7 +2050,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     sales = (netPrice + otherChargesAmount + insuranceCharge) / (Decimal)(1 + vehicleTaxRate);
                 }
 
-
                 if (taxCategory == 100000000)//VATable
                 {
                     salesOrderEntity["gsc_vatablesales"] = new Money(sales);
@@ -2103,7 +2085,9 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             {
                 throw new InvalidPluginExecutionException("Vehicle or Customer are null.");
             }
+
             _tracingService.Trace("Ending ComputeVAT method...");
+
             return salesOrderEntity;
         }
 
@@ -2293,7 +2277,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
                     _tracingService.Trace("Created Order Cab Chassis Record...");
                 }
-
             }
             _tracingService.Trace("Ending ReplicateQuoteCabChassis Method...");
         }
@@ -2363,11 +2346,9 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     _organizationService.Update(orderToUpdate);
 
                     _tracingService.Trace("Order Net Monthly Amoritzation Updated.");
-
                 }
 
             }
-
             _tracingService.Trace("Ended GetSelectedMonthlyAmortization method...");
         }
 
@@ -2393,8 +2374,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     _organizationService.Delete(orderCC.LogicalName, orderCC.Id);
                     _tracingService.Trace("Order Cab Chassis Deleted...");
                 }
-
-
             }
 
             _tracingService.Trace("Ending DeleteQuoteCabChassis Method...");
@@ -2432,12 +2411,8 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
         {
             _tracingService.Trace("Started ComputeUnitPrice Method...");
 
-           // var priceLevelId = productEntity.Contains("pricelevelid") ? productEntity.GetAttributeValue<EntityReference>("pricelevelid").Id
-               // : Guid.Empty;
-
             decimal sellPrice = 0;
             
-
             PriceListHandler priceListHandler = new PriceListHandler(_organizationService, _tracingService);
             List<Entity> latestPriceList = priceListHandler.RetrievePriceList(salesOrderEntity, 100000000);
             if (latestPriceList.Count > 0)
@@ -2536,11 +2511,9 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     }
                 }
             }
-
-            
-
             _tracingService.Trace("Ending UnAllocateVehicle Method");
         }
+
         //Created By : Jessica Casupanan, Created On : 11/23/2016
         /*Purpose: Validate if the record can be deleted based on status
          * Registration Details: 
@@ -2693,7 +2666,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 ? new Guid(salesOrderEntity.GetAttributeValue<String>("gsc_allocateditemstodelete"))
                 : Guid.Empty;
 
-
             _tracingService.Trace("Retrieve Record");
             EntityCollection AllocatedItemsRecords = CommonHandler.RetrieveRecordsByOneValue("gsc_iv_allocatedvehicle", "gsc_iv_allocatedvehicleid", allocatedItemsid, _organizationService, null, OrderType.Ascending,
                 new[] { "gsc_iv_allocatedvehicleid" });
@@ -2708,9 +2680,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     //_organizationService.Delete("gsc_iv_allocatedvehicle", allocatedItemsid);
                 }
             }
-
             _tracingService.Trace("Ending DeleteVehicleAllocatedItems Method...");
-
         }
 
         
@@ -2779,9 +2749,9 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     return true;
                 }
             }
+
             _tracingService.Trace("Ended CheckIfHasUnitPrice Method...");
             return false;
-
         }
 
         public void UpdateReservation(Entity salesOrder)
