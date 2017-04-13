@@ -766,8 +766,8 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             _tracingService.Trace("Started ReplicateEditableChattelFee method..");
 
             //Return if Free Chattel Fee is checked
-            if (salesOrderEntity.GetAttributeValue<Boolean>("gsc_freechattelfee") == true) 
-             return null; 
+            if (salesOrderEntity.GetAttributeValue<Boolean>("gsc_freechattelfee") == true)
+                return null;
 
             Decimal newChattelFeeAmount = salesOrderEntity.Contains("gsc_chattelfeeeditable")
                 ? salesOrderEntity.GetAttributeValue<Money>("gsc_chattelfeeeditable").Value
@@ -1358,19 +1358,22 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             if (amountFinancedDiscount != 0)
             {
                 if (CheckifZIP(salesOrderEntity, schemeEntity))
-                {//There is discount for amount financed but AOR is Zero or Tagged as ZIP
+                {
+                    //There is discount for amount financed but AOR is Zero or Tagged as ZIP
                     _tracingService.Trace("There is discount for amount financed but AOR is Zero or Tagged as ZIP");
 
                     monthlyAmortization = NormalFormula(salesOrderEntity, schemeEntity);
                 }
                 else
-                {//There is discount for amount financed
+                {
+                    //There is discount for amount financed
                     _tracingService.Trace("There is discount for amount financed");
                     monthlyAmortization = PMTFormula(salesOrderEntity, schemeEntity);
                 }
             }
             else
-            { //There is no discount for amount financed 
+            {
+                //There is no discount for amount financed 
                 _tracingService.Trace("There is no discount for amount financed");
                 monthlyAmortization = NormalFormula(salesOrderEntity, schemeEntity);
             }
@@ -1542,7 +1545,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             salesOrderEntity = ComputeVAT(salesOrderEntity);
             //throw new InvalidPluginExecutionException("test");
             //END
-
             if (message.Equals("Update"))
             {
                 _organizationService.Update(salesOrderEntity);
@@ -1598,7 +1600,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     totalCashOutlay = totalCashOutlay - reservationFee;
                 }
             }
-            //cash
             else
                 totalCashOutlay = totalAmountDue - reservationFee;
 
@@ -1662,7 +1663,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                         //End
                         //Edited by: Raphael Herrera, Edited On: 5/4/2016
                         //added gsc_predefined in fields created
-
                         _organizationService.Create(requirementEntity);
                     }
                 }
@@ -1960,7 +1960,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             //Modified by: JGC_12202016
             _tracingService.Trace("Started ComputeVAT method...");
 
-            #region Get customer tax rate and vehicle tax rate
             var customer = salesOrderEntity.Contains("customerid")
                    && salesOrderEntity.GetAttributeValue<EntityReference>("customerid") != null
                    ? salesOrderEntity.GetAttributeValue<EntityReference>("customerid")
@@ -2019,7 +2018,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     Entity taxEntity = taxCollection.Entities[0];
                     taxCategory = taxEntity.GetAttributeValue<OptionSetValue>("gsc_taxcategory").Value;
                 }
-            #endregion
 
                 Int32 paymentMode = salesOrderEntity.Contains("gsc_paymentmode")
                     ? salesOrderEntity.GetAttributeValue<OptionSetValue>("gsc_paymentmode").Value
@@ -2040,14 +2038,12 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 {
                     sales = (netPrice) / (Decimal)(1 + vehicleTaxRate);
                 }
-                //Cash/BPO/Company PO
                 else
-                {
                     sales = (netPrice + otherChargesAmount + insuranceCharge) / (Decimal)(1 + vehicleTaxRate);
-                }
 
-                if (taxCategory == 100000000)//VATable
+                if (taxCategory == 100000000)
                 {
+                    //VATable
                     salesOrderEntity["gsc_vatablesales"] = new Money(sales);
                     salesOrderEntity["gsc_vatexemptsales"] = new Money(0);
                     salesOrderEntity["gsc_zeroratedsales"] = new Money(0);
@@ -2056,8 +2052,9 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     salesOrderEntity["gsc_totalamountdue"] = new Money(Math.Round(sales + (sales * customerTaxRate), 2));
                     _tracingService.Trace("Tax Category is VATable...");
                 }
-                else if (taxCategory == 100000002)//vat exempt
+                else if (taxCategory == 100000002)
                 {
+                    //vat exempt
                     salesOrderEntity["gsc_vatablesales"] = new Money(0);
                     salesOrderEntity["gsc_vatexemptsales"] = new Money(sales);
                     salesOrderEntity["gsc_zeroratedsales"] = new Money(0);
@@ -2066,8 +2063,9 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     salesOrderEntity["gsc_totalamountdue"] = new Money(sales);
                     _tracingService.Trace("Tax category is VAT exempt...");
                 }
-                else if (taxCategory == 100000001)//Zero Rated
+                else if (taxCategory == 100000001)
                 {
+                    //Zero Rated
                     salesOrderEntity["gsc_vatablesales"] = new Money(0);
                     salesOrderEntity["gsc_vatexemptsales"] = new Money(0);
                     salesOrderEntity["gsc_zeroratedsales"] = new Money(sales);
