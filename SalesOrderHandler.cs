@@ -238,7 +238,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             EntityCollection quoteChargeRecords = CommonHandler.RetrieveRecordsByOneValue("gsc_cmn_quotecharge", "gsc_quoteid", quoteId, _organizationService, null, OrderType.Ascending,
                 new[] { "gsc_quotechargepn", "gsc_chargesid", "gsc_description", "gsc_chargetype", "gsc_chargeamount", "gsc_actualcost", "gsc_free" });
 
-
             if (quoteChargeRecords != null || quoteChargeRecords.Entities.Count > 0)
             {
                 foreach (Entity quoteCharge in quoteChargeRecords.Entities)
@@ -975,7 +974,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 salesOrderEntity["gsc_quotedate"] = quoteRecords.Entities[0].GetAttributeValue<DateTime>("createdon");
             }
 
-
             salesOrderEntity["gsc_orderdate"] = salesOrderEntity.GetAttributeValue<DateTime>("createdon");
 
             _tracingService.Trace("Ended SetDates method ...");
@@ -1026,7 +1024,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     }
 
                     salesOrderEntity["gsc_insurance"] = insurance;
-
 
                     if (message.Equals("Update"))
                     {
@@ -1340,7 +1337,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     monthlyAmortization["gsc_ordermonthlyamortizationpn"] = string.Format("{0:0,0.00}", ComputeForMonthlyAmortization(salesOrderEntity, financingSchemeDetail));
 
                     _organizationService.Create(monthlyAmortization);
-
                 }
                 return monthlyAmortization;
             }
@@ -1688,6 +1684,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 new ConditionExpression("gsc_documenttype", ConditionOperator.Equal, true),
                 new ConditionExpression("gsc_default", ConditionOperator.Equal, true)
             };
+
             EntityCollection documentCollection = CommonHandler.RetrieveRecordsByConditions("gsc_sls_document", internalDocumentCondition, _organizationService,
                 null, OrderType.Ascending, new[] { "gsc_documenttype", "gsc_documentpn" });
 
