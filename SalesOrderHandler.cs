@@ -53,7 +53,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                    "gsc_leadsourceid", "gsc_financingschemeid", "gsc_bankid", "gsc_freechattelfee", "gsc_insuranceid", "gsc_free",
                    "gsc_downpaymentamount", "gsc_downpaymentpercentage", "gsc_applytodppercentage", "gsc_applytouppercentage", "gsc_applytoafpercentage",
                    "gsc_applytodpamount", "gsc_applytoupamount", "gsc_applytoafamount", "gsc_netmonthlyamortization", "gsc_portaluserid",
-                   "opportunityid", "gsc_vehicletype", "gsc_vehicleuse"});
+                   "opportunityid", "gsc_vehicletype", "gsc_vehicleuse" });
 
             _tracingService.Trace("Quote records count " + String.Concat(quoteRecords.Entities.Count));
 
@@ -300,6 +300,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     throw new InvalidPluginExecutionException("Cannot proceed with your transaction.\n Please setup tax for Product Catalog.");
             }
         }
+
         public void CheckifCustomerHasTax(Entity salesOrderEntity)
         {
             _tracingService.Trace("Started CheckifVehicleHasTax method.");
@@ -469,23 +470,23 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
                 _tracingService.Trace("Retrieve EngineType..");
                 var engineType = product.Contains("gsc_enginetype")
-                    ? product.GetAttributeValue<String>("gsc_enginetype") 
+                    ? product.GetAttributeValue<String>("gsc_enginetype")
                     : String.Empty;
 
                 var transmission = product.Contains("gsc_transmission")
-                    ? product.FormattedValues["gsc_transmission"] 
+                    ? product.FormattedValues["gsc_transmission"]
                     : String.Empty;
 
                 var grossVehicleWeight = product.Contains("gsc_grossvehicleweight")
-                    ? product.GetAttributeValue<String>("gsc_grossvehicleweight") 
+                    ? product.GetAttributeValue<String>("gsc_grossvehicleweight")
                     : String.Empty;
 
                 var pistonDisplacement = product.Contains("gsc_pistondisplacement")
-                    ? product.GetAttributeValue<String>("gsc_pistondisplacement") 
+                    ? product.GetAttributeValue<String>("gsc_pistondisplacement")
                     : String.Empty;
 
                 var fuelType = product.Contains("gsc_fueltype")
-                    ? product.FormattedValues["gsc_fueltype"] 
+                    ? product.FormattedValues["gsc_fueltype"]
                     : String.Empty;
 
                 var status = product.Contains("gsc_status")
@@ -493,16 +494,16 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     : String.Empty;
 
                 var warrantyExpiryDays = product.Contains("gsc_warrantyexpirydays")
-                    ? product.GetAttributeValue<String>("gsc_warrantyexpirydays") 
+                    ? product.GetAttributeValue<String>("gsc_warrantyexpirydays")
                     : String.Empty;
 
                 var warrantyMileage = product.Contains("gsc_warrantymileage")
-                    ? product.GetAttributeValue<String>("gsc_warrantymileage") 
+                    ? product.GetAttributeValue<String>("gsc_warrantymileage")
                     : String.Empty;
 
                 _tracingService.Trace("Retrieve Vehicle Details..");
                 var otherVehicleDetails = product.Contains("gsc_othervehicledetails")
-                    ? product.GetAttributeValue<String>("gsc_othervehicledetails") 
+                    ? product.GetAttributeValue<String>("gsc_othervehicledetails")
                     : String.Empty;
 
                 var modelCode = product.Contains("gsc_modelcode")
@@ -515,7 +516,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
                 String description = "Engine Type: " + engineType +
                         "\nModel Code: " + modelCode +
-                        "\nOption Code: " + optionCode + 
+                        "\nOption Code: " + optionCode +
                         "\nTransmission: " + transmission +
                         "\nWeight: " + grossVehicleWeight +
                         "\nDisplacement: " + pistonDisplacement +
@@ -607,7 +608,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     ? salesOrderEntity.GetAttributeValue<EntityReference>("gsc_productid").Id
                     : Guid.Empty;
 
-                _tracingService.Trace("Product ID " + String.Concat(productId)); 
+                _tracingService.Trace("Product ID " + String.Concat(productId));
 
                 var productConditionList = new List<ConditionExpression>
                     {
@@ -877,50 +878,50 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             orderToUpdate["gsc_totalamountdue"] = salesOrderEntity["gsc_totalamountdue"];
             _tracingService.Trace("18");
 
-           /* if (downpayment == 0 && amountFinanced == 0 && unitPrice == 0)
-            {
-                _tracingService.Trace("Get Discount Values from Order Discount...");
+            /* if (downpayment == 0 && amountFinanced == 0 && unitPrice == 0)
+             {
+                 _tracingService.Trace("Get Discount Values from Order Discount...");
 
-                //Retrieve Quote Discount records with the same Order
-                EntityCollection orderDiscountRecords = CommonHandler.RetrieveRecordsByOneValue("gsc_cmn_salesorderdiscount", "gsc_salesorderid", salesOrderEntity.Id, _organizationService, null, OrderType.Ascending,
-                    new[] { "gsc_applyamounttodp", "gsc_applyamounttoaf", "gsc_applyamounttoup" });
+                 //Retrieve Quote Discount records with the same Order
+                 EntityCollection orderDiscountRecords = CommonHandler.RetrieveRecordsByOneValue("gsc_cmn_salesorderdiscount", "gsc_salesorderid", salesOrderEntity.Id, _organizationService, null, OrderType.Ascending,
+                     new[] { "gsc_applyamounttodp", "gsc_applyamounttoaf", "gsc_applyamounttoup" });
 
-                if (orderDiscountRecords != null && orderDiscountRecords.Entities.Count > 0)
-                {
-                    foreach (var orderDiscount in orderDiscountRecords.Entities)
-                    {
-                        _tracingService.Trace("Compute Total Discounts ... ");
+                 if (orderDiscountRecords != null && orderDiscountRecords.Entities.Count > 0)
+                 {
+                     foreach (var orderDiscount in orderDiscountRecords.Entities)
+                     {
+                         _tracingService.Trace("Compute Total Discounts ... ");
 
-                        downpayment += orderDiscount.Contains("gsc_applyamounttodp")
-                            ? orderDiscount.GetAttributeValue<Money>("gsc_applyamounttodp").Value
-                            : Decimal.Zero;
+                         downpayment += orderDiscount.Contains("gsc_applyamounttodp")
+                             ? orderDiscount.GetAttributeValue<Money>("gsc_applyamounttodp").Value
+                             : Decimal.Zero;
 
-                        amountFinanced += orderDiscount.Contains("gsc_applyamounttoaf")
-                            ? orderDiscount.GetAttributeValue<Money>("gsc_applyamounttoaf").Value
-                            : Decimal.Zero;
+                         amountFinanced += orderDiscount.Contains("gsc_applyamounttoaf")
+                             ? orderDiscount.GetAttributeValue<Money>("gsc_applyamounttoaf").Value
+                             : Decimal.Zero;
 
-                        unitPrice += orderDiscount.Contains("gsc_applyamounttoup")
-                            ? orderDiscount.GetAttributeValue<Money>("gsc_applyamounttoup").Value
-                            : Decimal.Zero;
-                    }
-                }
+                         unitPrice += orderDiscount.Contains("gsc_applyamounttoup")
+                             ? orderDiscount.GetAttributeValue<Money>("gsc_applyamounttoup").Value
+                             : Decimal.Zero;
+                     }
+                 }
 
-            }
+             }
 
-            salesOrderEntity["gsc_discount"] = new Money(unitPrice);
-            salesOrderEntity["gsc_discountamountfinanced"] = new Money(amountFinanced);
-            salesOrderEntity["gsc_downpaymentdiscount"] = new Money(downpayment);
+             salesOrderEntity["gsc_discount"] = new Money(unitPrice);
+             salesOrderEntity["gsc_discountamountfinanced"] = new Money(amountFinanced);
+             salesOrderEntity["gsc_downpaymentdiscount"] = new Money(downpayment);
 
-            salesOrderEntity = ValidateDiscounts(salesOrderEntity);
+             salesOrderEntity = ValidateDiscounts(salesOrderEntity);
 
-            var netdp = ComputeNetDownPayment(salesOrderEntity);
-            salesOrderEntity["gsc_netdownpayment"] = new Money(netdp);
-            salesOrderEntity["gsc_downpayment"] = new Money(netdp);
+             var netdp = ComputeNetDownPayment(salesOrderEntity);
+             salesOrderEntity["gsc_netdownpayment"] = new Money(netdp);
+             salesOrderEntity["gsc_downpayment"] = new Money(netdp);
 
-            if (message.Equals("Update"))
-            {
-                _organizationService.Update(salesOrderEntity);
-            }*/
+             if (message.Equals("Update"))
+             {
+                 _organizationService.Update(salesOrderEntity);
+             }*/
 
             _organizationService.Update(orderToUpdate);
 
@@ -999,7 +1000,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 var isfree = salesOrderEntity.GetAttributeValue<Boolean>("gsc_free");
 
                 EntityCollection insuranceRecords = CommonHandler.RetrieveRecordsByOneValue("gsc_cmn_insurance", "gsc_cmn_insuranceid", insuranceid,
-                    _organizationService, null, OrderType.Ascending, new[] { "gsc_vehicletypeid", "gsc_vehicleuse", "gsc_totalpremium", "gsc_providercompanyid"});
+                    _organizationService, null, OrderType.Ascending, new[] { "gsc_vehicletypeid", "gsc_vehicleuse", "gsc_totalpremium", "gsc_providercompanyid" });
 
                 if (insuranceRecords != null && insuranceRecords.Entities.Count > 0)
                 {
@@ -1637,7 +1638,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     {
                         new ConditionExpression("gsc_bankid", ConditionOperator.Equal, bankid)
                     };
-                
+
                 EntityCollection Document = CommonHandler.RetrieveRecordsByConditions("gsc_sls_documentchecklist", DocumentCondition, _organizationService, null, OrderType.Ascending,
                 new[] { "gsc_documentid", "gsc_documentchecklistpn", "gsc_customertype", "gsc_mandatory", "gsc_documenttype" });
 
@@ -1666,9 +1667,9 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 }
             }
 
-            if(message == "Create")
+            if (message == "Create")
                 CreateInternalDocumentChecklist(orderEntity);
-            
+
             _tracingService.Trace("Ended CreateRequirementChecklist method ...");
 
             return orderEntity;
@@ -1744,7 +1745,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
             _tracingService.Trace("Ending DeleteExistingRequirementChecklist Method...");
         }
-
 
         //Created By: Raphael Herrera, Created On: 4/29/2016
         /*Purpose: Set Status of order to For Allocation. Parameter is Guid to be updated.
@@ -1825,53 +1825,53 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
                 EntityCollection inventoryRecords = CommonHandler.RetrieveRecordsByOneValue("gsc_iv_inventory", "gsc_iv_inventoryid", inventoryId,
                     _organizationService, null, OrderType.Ascending, new[] { "gsc_color", "gsc_csno", "gsc_engineno", "gsc_modelcode", "gsc_modelyear",
-                        "gsc_optioncode", "gsc_productionno", "gsc_vin", "gsc_productquantityid", "gsc_status", "gsc_siteid", "gsc_productid", "gsc_basemodelid"});
-            
+                        "gsc_optioncode", "gsc_productionno", "gsc_vin", "gsc_productquantityid", "gsc_status", "gsc_siteid", "gsc_productid", "gsc_basemodelid" });
+
                 if (inventoryRecords != null && inventoryRecords.Entities.Count > 0)
                 {
-                    _tracingService.Trace("Retrieved Inventory Details"); 
+                    _tracingService.Trace("Retrieved Inventory Details");
 
                     Entity inventoryEntity = inventoryRecords.Entities[0];
 
                     var isAllocated = CheckifAllocated(inventoryEntity);
 
-                        _tracingService.Trace("Proceed in Allocation ...");
+                    _tracingService.Trace("Proceed in Allocation ...");
 
-                        Entity allocatedVehicle = new Entity("gsc_iv_allocatedvehicle");
-                        allocatedVehicle["gsc_modelyear"] = inventoryEntity.GetAttributeValue<String>("gsc_modelyear");
-                        allocatedVehicle["gsc_color"] = inventoryEntity.GetAttributeValue<String>("gsc_color");
-                        allocatedVehicle["gsc_csno"] = inventoryEntity.GetAttributeValue<String>("gsc_csno");
-                        allocatedVehicle["gsc_engineno"] = inventoryEntity.GetAttributeValue<String>("gsc_engineno");
-                        allocatedVehicle["gsc_modelcode"] = inventoryEntity.GetAttributeValue<String>("gsc_modelcode");
-                        allocatedVehicle["gsc_optioncode"] = inventoryEntity.GetAttributeValue<String>("gsc_optioncode");
-                        allocatedVehicle["gsc_productionno"] = inventoryEntity.GetAttributeValue<String>("gsc_productionno");
-                        allocatedVehicle["gsc_vin"] = inventoryEntity.GetAttributeValue<String>("gsc_vin");
-                        allocatedVehicle["gsc_vehicleallocateddate"] = Convert.ToDateTime(today);
-                        allocatedVehicle["gsc_vehicleallocationage"] = 0;
-                        allocatedVehicle["gsc_inventoryid"] = new EntityReference(inventoryEntity.LogicalName, inventoryEntity.Id);
-                        allocatedVehicle["gsc_orderid"] = new EntityReference(salesOrderEntity.LogicalName, salesOrderEntity.Id);
-                        _organizationService.Create(allocatedVehicle);
+                    Entity allocatedVehicle = new Entity("gsc_iv_allocatedvehicle");
+                    allocatedVehicle["gsc_modelyear"] = inventoryEntity.GetAttributeValue<String>("gsc_modelyear");
+                    allocatedVehicle["gsc_color"] = inventoryEntity.GetAttributeValue<String>("gsc_color");
+                    allocatedVehicle["gsc_csno"] = inventoryEntity.GetAttributeValue<String>("gsc_csno");
+                    allocatedVehicle["gsc_engineno"] = inventoryEntity.GetAttributeValue<String>("gsc_engineno");
+                    allocatedVehicle["gsc_modelcode"] = inventoryEntity.GetAttributeValue<String>("gsc_modelcode");
+                    allocatedVehicle["gsc_optioncode"] = inventoryEntity.GetAttributeValue<String>("gsc_optioncode");
+                    allocatedVehicle["gsc_productionno"] = inventoryEntity.GetAttributeValue<String>("gsc_productionno");
+                    allocatedVehicle["gsc_vin"] = inventoryEntity.GetAttributeValue<String>("gsc_vin");
+                    allocatedVehicle["gsc_vehicleallocateddate"] = Convert.ToDateTime(today);
+                    allocatedVehicle["gsc_vehicleallocationage"] = 0;
+                    allocatedVehicle["gsc_inventoryid"] = new EntityReference(inventoryEntity.LogicalName, inventoryEntity.Id);
+                    allocatedVehicle["gsc_orderid"] = new EntityReference(salesOrderEntity.LogicalName, salesOrderEntity.Id);
+                    _organizationService.Create(allocatedVehicle);
 
-                        _tracingService.Trace("Allocated Vehicle Created ...");
+                    _tracingService.Trace("Allocated Vehicle Created ...");
 
-                        InventoryMovementHandler inventoryMovementHandler = new InventoryMovementHandler(_organizationService, _tracingService);
-                        inventoryMovementHandler.UpdateInventoryStatus(inventoryEntity, 100000001);
-                        Entity productQuantityEntity = inventoryMovementHandler.UpdateProductQuantity(inventoryEntity, 0, -1, 1, 0, 0, 0, 0, 0);
+                    InventoryMovementHandler inventoryMovementHandler = new InventoryMovementHandler(_organizationService, _tracingService);
+                    inventoryMovementHandler.UpdateInventoryStatus(inventoryEntity, 100000001);
+                    Entity productQuantityEntity = inventoryMovementHandler.UpdateProductQuantity(inventoryEntity, 0, -1, 1, 0, 0, 0, 0, 0);
 
-                        Entity salesOrderToUpdate = _organizationService.Retrieve(salesOrderEntity.LogicalName, salesOrderEntity.Id,
-                          new ColumnSet("gsc_status", "gsc_vehicleallocateddate", "name", "gsc_status"));
-                        salesOrderToUpdate["gsc_status"] = new OptionSetValue(100000003);
-                        salesOrderToUpdate["gsc_vehicleallocateddate"] = Convert.ToDateTime(today);
-                        _organizationService.Update(salesOrderToUpdate);
+                    Entity salesOrderToUpdate = _organizationService.Retrieve(salesOrderEntity.LogicalName, salesOrderEntity.Id,
+                      new ColumnSet("gsc_status", "gsc_vehicleallocateddate", "name", "gsc_status"));
+                    salesOrderToUpdate["gsc_status"] = new OptionSetValue(100000003);
+                    salesOrderToUpdate["gsc_vehicleallocateddate"] = Convert.ToDateTime(today);
+                    _organizationService.Update(salesOrderToUpdate);
 
-                        _tracingService.Trace("Sales Order Updated ...");
+                    _tracingService.Trace("Sales Order Updated ...");
 
-                        // Create Inventory History Log
-                        inventoryMovementHandler.CreateInventoryQuantityAllocated(salesOrderToUpdate, inventoryEntity, productQuantityEntity, salesOrderToUpdate.GetAttributeValue<string>("name"),
-                            DateTime.UtcNow, "Allocated", Guid.Empty, 100000001);
+                    // Create Inventory History Log
+                    inventoryMovementHandler.CreateInventoryQuantityAllocated(salesOrderToUpdate, inventoryEntity, productQuantityEntity, salesOrderToUpdate.GetAttributeValue<string>("name"),
+                        DateTime.UtcNow, "Allocated", Guid.Empty, 100000001);
 
-                        _tracingService.Trace("Ended AllocateVehicle Method.");
-                        return allocatedVehicle;
+                    _tracingService.Trace("Ended AllocateVehicle Method.");
+                    return allocatedVehicle;
                 }
             }
             return null;
@@ -1932,7 +1932,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     _tracingService.Trace("Ended ComputeNetPrice method...");
                     return 0;
                 }
-
                 else
                 {
                     _tracingService.Trace("Ended ComputeNetPrice method...");
@@ -1970,7 +1969,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     && salesOrderEntity.GetAttributeValue<EntityReference>("gsc_productid") != null
                     ? salesOrderEntity.GetAttributeValue<EntityReference>("gsc_productid").Id
                     : Guid.Empty;
-
 
             EntityCollection customerCollection = null;
             EntityCollection vehicleCollection = null;
@@ -2094,7 +2092,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
         private Decimal ComputeDownPaymentAmount(Entity salesOrderEntity)
         {
             _tracingService.Trace("Started ComputeDownPaymentAmount method...");
-            
+
             Decimal netPrice = salesOrderEntity.Contains("gsc_netprice")
                 ? salesOrderEntity.GetAttributeValue<Money>("gsc_netprice").Value
                 : 0;
@@ -2107,8 +2105,8 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             {
                 downPaymentAmount = netPrice * ((Decimal)downPaymentPercentage / 100);
             }
-            
-            _tracingService.Trace("Started ComputeDownPaymentAmount method...");            
+
+            _tracingService.Trace("Started ComputeDownPaymentAmount method...");
             return downPaymentAmount;
         }
 
@@ -2117,7 +2115,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
          * Being called by the public methods when net downpayment needs to be recomputed */
         private Decimal ComputeNetDownPayment(Entity salesOrderEntity)
         {
-            _tracingService.Trace("Started ComputeNetDownPayment method...");            
+            _tracingService.Trace("Started ComputeNetDownPayment method...");
 
             var lessdiscount = salesOrderEntity.Contains("gsc_downpaymentdiscount")
                 ? salesOrderEntity.GetAttributeValue<Money>("gsc_downpaymentdiscount").Value
@@ -2131,7 +2129,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
             if (downpayment != 0)
             {
-                netdp = lessdiscount > downpayment ? 0 : downpayment - lessdiscount; 
+                netdp = lessdiscount > downpayment ? 0 : downpayment - lessdiscount;
             }
             else
             {
@@ -2409,7 +2407,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             _tracingService.Trace("Started ComputeUnitPrice Method...");
 
             decimal sellPrice = 0;
-            
+
             PriceListHandler priceListHandler = new PriceListHandler(_organizationService, _tracingService);
             List<Entity> latestPriceList = priceListHandler.RetrievePriceList(salesOrderEntity, 100000000);
             if (latestPriceList.Count > 0)
@@ -2439,49 +2437,49 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 throw new InvalidPluginExecutionException("There is no effecive Price List for the selected Vehicle.");
             }
 
-         /*   //Retrieve price level associated with product
-            EntityCollection priceLevelCollection = CommonHandler.RetrieveRecordsByOneValue("pricelevel", "pricelevelid", priceLevelId, _organizationService,
-                null, OrderType.Ascending, new[] { "gsc_taxstatus", "statecode", "begindate", "enddate" });
+            /*   //Retrieve price level associated with product
+               EntityCollection priceLevelCollection = CommonHandler.RetrieveRecordsByOneValue("pricelevel", "pricelevelid", priceLevelId, _organizationService,
+                   null, OrderType.Ascending, new[] { "gsc_taxstatus", "statecode", "begindate", "enddate" });
 
-            _tracingService.Trace("Price Level Records Retrieved: " + priceLevelCollection.Entities.Count);
-            if (priceLevelCollection != null && priceLevelCollection.Entities.Count > 0)
-            {
-                Entity priceLevelEntity = priceLevelCollection.Entities[0];
+               _tracingService.Trace("Price Level Records Retrieved: " + priceLevelCollection.Entities.Count);
+               if (priceLevelCollection != null && priceLevelCollection.Entities.Count > 0)
+               {
+                   Entity priceLevelEntity = priceLevelCollection.Entities[0];
 
-                if (priceLevelEntity.GetAttributeValue<OptionSetValue>("statecode").Value == 0)
-                {
-                    PriceListHandler priceListHandler = new PriceListHandler(_organizationService, _tracingService);
-                    bool isLatest = priceListHandler.CheckifDefaultPriceListIsLatest(priceLevelEntity);
+                   if (priceLevelEntity.GetAttributeValue<OptionSetValue>("statecode").Value == 0)
+                   {
+                       PriceListHandler priceListHandler = new PriceListHandler(_organizationService, _tracingService);
+                       bool isLatest = priceListHandler.CheckifDefaultPriceListIsLatest(priceLevelEntity);
 
-                    if (!isLatest)
-                        throw new InvalidPluginExecutionException("Price List associated to this item is out of date.");
+                       if (!isLatest)
+                           throw new InvalidPluginExecutionException("Price List associated to this item is out of date.");
 
-                    decimal taxStatus = priceLevelEntity.GetAttributeValue<OptionSetValue>("gsc_taxstatus").Value;
-                    sellPrice = productEntity.Contains("gsc_sellprice") ? productEntity.GetAttributeValue<Money>("gsc_sellprice").Value
-                        : 0;
+                       decimal taxStatus = priceLevelEntity.GetAttributeValue<OptionSetValue>("gsc_taxstatus").Value;
+                       sellPrice = productEntity.Contains("gsc_sellprice") ? productEntity.GetAttributeValue<Money>("gsc_sellprice").Value
+                           : 0;
 
-                    var taxRate = productEntity.Contains("gsc_taxrate")
-                        ? (Decimal)productEntity.GetAttributeValue<Double>("gsc_taxrate")
-                        : 0;
+                       var taxRate = productEntity.Contains("gsc_taxrate")
+                           ? (Decimal)productEntity.GetAttributeValue<Double>("gsc_taxrate")
+                           : 0;
 
-                    if (taxRate != 0)
-                    {
-                        taxRate = taxRate / 100;
-                    }
+                       if (taxRate != 0)
+                       {
+                           taxRate = taxRate / 100;
+                       }
 
-                    //Tax Exclusive
-                    if (taxStatus == 100000001)
-                        sellPrice = sellPrice * (1 + taxRate);
-                }
-                else
-                {
-                    throw new InvalidPluginExecutionException("There is no price list for the selected vehicle.");
-                }
-            }
-            else
-            {
-                throw new InvalidPluginExecutionException("There is no price list for the selected vehicle.");
-            }*/
+                       //Tax Exclusive
+                       if (taxStatus == 100000001)
+                           sellPrice = sellPrice * (1 + taxRate);
+                   }
+                   else
+                   {
+                       throw new InvalidPluginExecutionException("There is no price list for the selected vehicle.");
+                   }
+               }
+               else
+               {
+                   throw new InvalidPluginExecutionException("There is no price list for the selected vehicle.");
+               }*/
 
             _tracingService.Trace("Ending ComputeUnitPrice Method...");
             return sellPrice;
@@ -2680,7 +2678,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             _tracingService.Trace("Ending DeleteVehicleAllocatedItems Method...");
         }
 
-        
         //Created By: Artum Ramos, Created On: 12/27/2016
         /*Purpose: Set Transferred date for invoicing in Sales Order when Transfer for invoiced button was clicked
          * Registration Details:
@@ -2714,7 +2711,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
             _tracingService.Trace("Ended SetTransferInvoiceDate method");
         }
-
 
         //Created By : Jessica Casupanan, Created On : 01/19/2017
         //Purpose : Validate Unit Price On Create
