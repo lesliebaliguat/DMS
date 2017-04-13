@@ -766,7 +766,8 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             _tracingService.Trace("Started ReplicateEditableChattelFee method..");
 
             //Return if Free Chattel Fee is checked
-            if (salesOrderEntity.GetAttributeValue<Boolean>("gsc_freechattelfee") == true) { return null; }
+            if (salesOrderEntity.GetAttributeValue<Boolean>("gsc_freechattelfee") == true) 
+             return null; 
 
             Decimal newChattelFeeAmount = salesOrderEntity.Contains("gsc_chattelfeeeditable")
                 ? salesOrderEntity.GetAttributeValue<Money>("gsc_chattelfeeeditable").Value
@@ -1357,13 +1358,13 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             if (amountFinancedDiscount != 0)
             {
                 if (CheckifZIP(salesOrderEntity, schemeEntity))
-                { //There is discount for amount financed but AOR is Zero or Tagged as ZIP
+                {//There is discount for amount financed but AOR is Zero or Tagged as ZIP
                     _tracingService.Trace("There is discount for amount financed but AOR is Zero or Tagged as ZIP");
 
                     monthlyAmortization = NormalFormula(salesOrderEntity, schemeEntity);
                 }
                 else
-                { //There is discount for amount financed
+                {//There is discount for amount financed
                     _tracingService.Trace("There is discount for amount financed");
                     monthlyAmortization = PMTFormula(salesOrderEntity, schemeEntity);
                 }
@@ -2342,7 +2343,6 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
                     _tracingService.Trace("Order Net Monthly Amoritzation Updated.");
                 }
-
             }
             _tracingService.Trace("Ended GetSelectedMonthlyAmortization method...");
         }
@@ -2771,6 +2771,5 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
             _organizationService.Update(orderToUpdate);
         }
-
     }
 }
