@@ -1357,13 +1357,13 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             if (amountFinancedDiscount != 0)
             {
                 if (CheckifZIP(salesOrderEntity, schemeEntity))
-                {//There is discount for amount financed but AOR is Zero or Tagged as ZIP
+                { //There is discount for amount financed but AOR is Zero or Tagged as ZIP
                     _tracingService.Trace("There is discount for amount financed but AOR is Zero or Tagged as ZIP");
 
                     monthlyAmortization = NormalFormula(salesOrderEntity, schemeEntity);
                 }
                 else
-                {//There is discount for amount financed
+                { //There is discount for amount financed
                     _tracingService.Trace("There is discount for amount financed");
                     monthlyAmortization = PMTFormula(salesOrderEntity, schemeEntity);
                 }
