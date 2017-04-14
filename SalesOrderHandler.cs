@@ -1966,54 +1966,15 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     ? salesOrderEntity.GetAttributeValue<EntityReference>("gsc_productid").Id
                     : Guid.Empty;
 
-            EntityCollection customerCollection = null;
-            EntityCollection vehicleCollection = null;
-
-            if (customer != null)
-            {
-                customerCollection = CommonHandler.RetrieveRecordsByOneValue(customer.LogicalName, customer.LogicalName + "id", customer.Id, _organizationService, null, OrderType.Ascending,
-                   new[] { "gsc_taxrate", "gsc_taxid" });
-            }
-
-            if (vehicle != null)
-            {
-                vehicleCollection = CommonHandler.RetrieveRecordsByOneValue("product", "productid", vehicle, _organizationService, null, OrderType.Ascending,
-                    new[] { "gsc_taxrate", "gsc_taxid", "pricelevelid" });
-            }
-
-            if ((vehicleCollection != null && vehicleCollection.Entities.Count > 0) && (customerCollection != null && customerCollection.Entities.Count > 0))
+            if (customer != null && vehicle != Guid.Empty)
             {
                 _tracingService.Trace("Vehicle and Customer are not null.");
 
-                Entity customerEntity = customerCollection.Entities[0];
-                Entity vehicleEntity = vehicleCollection.Entities[0];
+                Entity customerEntity = GetCustomerTaxInfo(customer);
+                Entity vehicleEntity = GetProductTaxRate(vehicle);
 
-                if (customerEntity.GetAttributeValue<EntityReference>("gsc_taxid") == null || customerEntity.Contains("gsc_taxrate") == false)
-                    throw new InvalidPluginExecutionException("Cannot proceed with your transaction.\n Please setup tax for Customer.");
-
-                if (vehicleEntity.GetAttributeValue<EntityReference>("gsc_taxid") == null || vehicleEntity.Contains("gsc_taxrate") == false)
-                    throw new InvalidPluginExecutionException("Cannot proceed with your transaction.\n Please setup tax for Product Catalog.");
-
-                var customerTaxRate = (decimal)customerEntity.GetAttributeValue<Double>("gsc_taxrate");
-
-                if (customerTaxRate != 0)
-                    customerTaxRate = customerTaxRate / 100;
-
-                var vehicleTaxRate = (decimal)vehicleEntity.GetAttributeValue<Double>("gsc_taxrate");
-
-                if (vehicleTaxRate != 0)
-                    vehicleTaxRate = vehicleTaxRate / 100;
-
-                decimal taxCategory = 0;
-
-                EntityCollection taxCollection = CommonHandler.RetrieveRecordsByOneValue("gsc_cmn_taxmaintenance", "gsc_cmn_taxmaintenanceid", CommonHandler.GetEntityReferenceIdSafe(customerEntity, "gsc_taxid"), _organizationService, null, OrderType.Ascending,
-                new[] { "gsc_taxcategory" });
-
-                if (taxCollection != null && taxCollection.Entities.Count > 0)
-                {
-                    Entity taxEntity = taxCollection.Entities[0];
-                    taxCategory = taxEntity.GetAttributeValue<OptionSetValue>("gsc_taxcategory").Value;
-                }
+                var customerTaxRate = GetTaxRate(customerEntity);
+                var vehicleTaxRate = GetTaxRate(vehicleEntity);
 
                 Int32 paymentMode = salesOrderEntity.Contains("gsc_paymentmode")
                     ? salesOrderEntity.GetAttributeValue<OptionSetValue>("gsc_paymentmode").Value
@@ -2037,39 +1998,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 else
                     sales = (netPrice + otherChargesAmount + insuranceCharge) / (Decimal)(1 + vehicleTaxRate);
 
-                if (taxCategory == 100000000)
-                {
-                    //VATable
-                    salesOrderEntity["gsc_vatablesales"] = new Money(sales);
-                    salesOrderEntity["gsc_vatexemptsales"] = new Money(0);
-                    salesOrderEntity["gsc_zeroratedsales"] = new Money(0);
-                    salesOrderEntity["gsc_totalsales"] = new Money(sales);
-                    salesOrderEntity["gsc_vatamount"] = new Money(Math.Round(sales * customerTaxRate, 2));
-                    salesOrderEntity["gsc_totalamountdue"] = new Money(Math.Round(sales + (sales * customerTaxRate), 2));
-                    _tracingService.Trace("Tax Category is VATable...");
-                }
-                else if (taxCategory == 100000002)
-                {
-                    //vat exempt
-                    salesOrderEntity["gsc_vatablesales"] = new Money(0);
-                    salesOrderEntity["gsc_vatexemptsales"] = new Money(sales);
-                    salesOrderEntity["gsc_zeroratedsales"] = new Money(0);
-                    salesOrderEntity["gsc_totalsales"] = new Money(sales);
-                    salesOrderEntity["gsc_vatamount"] = new Money(0);
-                    salesOrderEntity["gsc_totalamountdue"] = new Money(sales);
-                    _tracingService.Trace("Tax category is VAT exempt...");
-                }
-                else if (taxCategory == 100000001)
-                {
-                    //Zero Rated
-                    salesOrderEntity["gsc_vatablesales"] = new Money(0);
-                    salesOrderEntity["gsc_vatexemptsales"] = new Money(0);
-                    salesOrderEntity["gsc_zeroratedsales"] = new Money(sales);
-                    salesOrderEntity["gsc_totalsales"] = new Money(sales);
-                    salesOrderEntity["gsc_vatamount"] = new Money(0);
-                    salesOrderEntity["gsc_totalamountdue"] = new Money(sales);
-                    _tracingService.Trace("Tax Category is Zero Rated...");
-                }
+                SetVatables(customerEntity, salesOrderEntity, sales, customerRate);
             }
             else
             {
@@ -2079,6 +2008,90 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
             _tracingService.Trace("Ending ComputeVAT method...");
 
             return salesOrderEntity;
+        }
+
+        private Entity GetCustomerTaxInfo(EntityReference customer)
+        {
+            customerCollection = CommonHandler.RetrieveRecordsByOneValue(customer.LogicalName, customer.LogicalName + "id", customer.Id, _organizationService, null, OrderType.Ascending,
+               new[] { "gsc_taxrate", "gsc_taxid" });
+
+            Entity customerEntity = customerCollection.Entities[0];
+
+            if (customerEntity.GetAttributeValue<EntityReference>("gsc_taxid") == null || customerEntity.Contains("gsc_taxrate") == false)
+                throw new InvalidPluginExecutionException("Cannot proceed with your transaction.\n Please setup tax for Customer.");
+            else
+                return customerEntity;
+        }
+
+        private Entity GetProductTaxInfo(Guid vehicle)
+        {
+            vehicleCollection = CommonHandler.RetrieveRecordsByOneValue("product", "productid", vehicle, _organizationService, null, OrderType.Ascending,
+                new[] { "gsc_taxrate", "gsc_taxid", "pricelevelid" });
+
+            Entity vehicleEntity = vehicleCollection.Entities[0];
+
+            if (vehicleEntity.GetAttributeValue<EntityReference>("gsc_taxid") == null || vehicleEntity.Contains("gsc_taxrate") == false)
+                throw new InvalidPluginExecutionException("Cannot proceed with your transaction.\n Please setup tax for Product Catalog.");
+            else
+                return vehicleEntity;
+        }
+
+        private decimal GetTaxRate(Entity entity)
+        {
+            var taxRate = (decimal)entity.GetAttributeValue<double>("gsc_taxrate");
+
+            if (taxRate != 0)
+                taxRate = taxRate / 100;
+
+            return taxRate;
+        }
+
+        private Entity SetVatables(Entity customerEntity, Entity salesOrder, decimal sales, decimal customerRate)
+        {
+            EntityCollection taxCollection = CommonHandler.RetrieveRecordsByOneValue("gsc_cmn_taxmaintenance", "gsc_cmn_taxmaintenanceid", CommonHandler.GetEntityReferenceIdSafe(customerEntity, "gsc_taxid"), _organizationService, null, OrderType.Ascending,
+            new[] { "gsc_taxcategory" });
+
+            if (taxCollection != null && taxCollection.Entities.Count > 0)
+            {
+                Entity taxEntity = taxCollection.Entities[0];
+                var taxCategory = taxEntity.GetAttributeValue<OptionSetValue>("gsc_taxcategory").Value;
+
+                if (taxCategory == 100000000)
+                {
+                    //VATable
+                    salesOrder["gsc_vatablesales"] = new Money(sales);
+                    salesOrder["gsc_vatexemptsales"] = new Money(0);
+                    salesOrder["gsc_zeroratedsales"] = new Money(0);
+                    salesOrder["gsc_totalsales"] = new Money(sales);
+                    salesOrder["gsc_vatamount"] = new Money(Math.Round(sales * customerTaxRate, 2));
+                    salesOrder["gsc_totalamountdue"] = new Money(Math.Round(sales + (sales * customerTaxRate), 2)); 
+                    _tracingService.Trace("Tax Category is VATable...");
+                }
+                else if (taxCategory == 100000002)
+                {
+                    //vat exempt
+                    salesOrder["gsc_vatablesales"] = new Money(0);
+                    salesOrder["gsc_vatexemptsales"] = new Money(sales);
+                    salesOrder["gsc_zeroratedsales"] = new Money(0);
+                    salesOrder["gsc_totalsales"] = new Money(sales);
+                    salesOrder["gsc_vatamount"] = new Money(0);
+                    salesOrder["gsc_totalamountdue"] = new Money(sales);
+                    _tracingService.Trace("Tax category is VAT exempt...");
+                }
+                else if (taxCategory == 100000001)
+                {
+                    //Zero Rated
+                    salesOrder["gsc_vatablesales"] = new Money(0);
+                    salesOrder["gsc_vatexemptsales"] = new Money(0);
+                    salesOrder["gsc_zeroratedsales"] = new Money(sales);
+                    salesOrder["gsc_totalsales"] = new Money(sales);
+                    salesOrder["gsc_vatamount"] = new Money(0);
+                    salesOrder["gsc_totalamountdue"] = new Money(sales);
+                    _tracingService.Trace("Tax Category is Zero Rated...");
+                }
+            }
+
+            return salesOrder;
         }
 
         //Created By: Jerome Anthony Gerero
