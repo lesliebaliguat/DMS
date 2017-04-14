@@ -464,82 +464,78 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
                 Entity product = productRecords.Entities[0];
 
-                _tracingService.Trace("Retrieve EngineType..");
-                var engineType = product.Contains("gsc_enginetype")
-                    ? product.GetAttributeValue<String>("gsc_enginetype")
-                    : String.Empty;
-
-                var transmission = product.Contains("gsc_transmission")
-                    ? product.FormattedValues["gsc_transmission"]
-                    : String.Empty;
-
-                var grossVehicleWeight = product.Contains("gsc_grossvehicleweight")
-                    ? product.GetAttributeValue<String>("gsc_grossvehicleweight")
-                    : String.Empty;
-
-                var pistonDisplacement = product.Contains("gsc_pistondisplacement")
-                    ? product.GetAttributeValue<String>("gsc_pistondisplacement")
-                    : String.Empty;
-
-                var fuelType = product.Contains("gsc_fueltype")
-                    ? product.FormattedValues["gsc_fueltype"]
-                    : String.Empty;
-
-                var status = product.Contains("gsc_status")
-                    ? product.FormattedValues["gsc_status"]
-                    : String.Empty;
-
-                var warrantyExpiryDays = product.Contains("gsc_warrantyexpirydays")
-                    ? product.GetAttributeValue<String>("gsc_warrantyexpirydays")
-                    : String.Empty;
-
-                var warrantyMileage = product.Contains("gsc_warrantymileage")
-                    ? product.GetAttributeValue<String>("gsc_warrantymileage")
-                    : String.Empty;
-
-                _tracingService.Trace("Retrieve Vehicle Details..");
-                var otherVehicleDetails = product.Contains("gsc_othervehicledetails")
-                    ? product.GetAttributeValue<String>("gsc_othervehicledetails")
-                    : String.Empty;
-
-                var modelCode = product.Contains("gsc_modelcode")
-                        ? product["gsc_modelcode"]
-                        : String.Empty;
-
-                var optionCode = product.Contains("gsc_optioncode")
-                    ? product["gsc_optioncode"]
-                    : String.Empty;
-
-                String description = "Engine Type: " + engineType +
-                        "\nModel Code: " + modelCode +
-                        "\nOption Code: " + optionCode +
-                        "\nTransmission: " + transmission +
-                        "\nWeight: " + grossVehicleWeight +
-                        "\nDisplacement: " + pistonDisplacement +
-                        "\nFuel: " + fuelType +
-                        "\nStatus: " + status +
-                        "\nWarranty Days: " + warrantyExpiryDays +
-                        "\nWarranty Mileage: " + warrantyMileage +
-                        "\nOthers: " + otherVehicleDetails;
-                description = description.Remove(description.Length - 2, 2);
-
                 var sellPrice = new Money(ComputeUnitPrice(product, salesOrderEntity));
-                salesOrderEntity["gsc_vehicledetails"] = description;
+
+                salesOrderEntity["gsc_vehicledetails"] = ConcatenateDescription(product);
                 salesOrderEntity["gsc_vehicleunitprice"] = sellPrice;
                 salesOrderEntity["gsc_unitprice"] = sellPrice;
                 salesOrderEntity["gsc_vehiclebasemodelid"] = product.GetAttributeValue<EntityReference>("gsc_vehiclemodelid") != null
                     ? product.GetAttributeValue<EntityReference>("gsc_vehiclemodelid")
                     : null;
 
-                _tracingService.Trace("Update SalesOrder Entity..");
                 if (message.Equals("Update"))
                 {
+                    _tracingService.Trace("Update SalesOrder Entity..");
                     _organizationService.Update(salesOrderEntity);
                 }
             }
 
             _tracingService.Trace("Ended ReplicateVehicleDetails method..");
             return salesOrderEntity;
+        }
+
+        private String ConcatenateDescription(Entity product)
+        {
+            var engineType = product.Contains("gsc_enginetype")
+                ? product.GetAttributeValue<String>("gsc_enginetype")
+                : String.Empty;
+            var transmission = product.Contains("gsc_transmission")
+                ? product.FormattedValues["gsc_transmission"]
+                : String.Empty;
+            var grossVehicleWeight = product.Contains("gsc_grossvehicleweight")
+                ? product.GetAttributeValue<String>("gsc_grossvehicleweight")
+                : String.Empty;
+            var pistonDisplacement = product.Contains("gsc_pistondisplacement")
+                ? product.GetAttributeValue<String>("gsc_pistondisplacement")
+                : String.Empty;
+            var fuelType = product.Contains("gsc_fueltype")
+                ? product.FormattedValues["gsc_fueltype"]
+                : String.Empty;
+            var status = product.Contains("gsc_status")
+                ? product.FormattedValues["gsc_status"]
+                : String.Empty;
+            var warrantyExpiryDays = product.Contains("gsc_warrantyexpirydays")
+                ? product.GetAttributeValue<String>("gsc_warrantyexpirydays")
+                : String.Empty;
+            var warrantyMileage = product.Contains("gsc_warrantymileage")
+                ? product.GetAttributeValue<String>("gsc_warrantymileage")
+                : String.Empty;
+
+            var otherVehicleDetails = product.Contains("gsc_othervehicledetails")
+                ? product.GetAttributeValue<String>("gsc_othervehicledetails")
+                : String.Empty;
+
+            var modelCode = product.Contains("gsc_modelcode")
+                    ? product["gsc_modelcode"]
+                    : String.Empty;
+
+            var optionCode = product.Contains("gsc_optioncode")
+                ? product["gsc_optioncode"]
+                : String.Empty;
+
+            String description = "Engine Type: " + engineType +
+                    "\nModel Code: " + modelCode +
+                    "\nOption Code: " + optionCode +
+                    "\nTransmission: " + transmission +
+                    "\nWeight: " + grossVehicleWeight +
+                    "\nDisplacement: " + pistonDisplacement +
+                    "\nFuel: " + fuelType +
+                    "\nStatus: " + status +
+                    "\nWarranty Days: " + warrantyExpiryDays +
+                    "\nWarranty Mileage: " + warrantyMileage +
+                    "\nOthers: " + otherVehicleDetails;
+
+            return description.Remove(description.Length - 2, 2);
         }
 
         //Created By : Jerome Anthony Gerero, Created On : 3/9/2016
