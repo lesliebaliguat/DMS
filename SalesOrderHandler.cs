@@ -134,24 +134,18 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                     ? quote.GetAttributeValue<OptionSetValue>("gsc_vehicleuse")
                     : null;
 
-                _tracingService.Trace("v");
                 salesOrderEntity["gsc_free"] = quote.GetAttributeValue<Boolean>("gsc_free");
-                _tracingService.Trace("w");
                 //Record Information
                 salesOrderEntity["gsc_status"] = new OptionSetValue(100000000);
-                _tracingService.Trace("x");
                 salesOrderEntity["gsc_dealerid"] = quote.Contains("gsc_dealerid")
                     ? new EntityReference(quote.GetAttributeValue<EntityReference>("gsc_dealerid").LogicalName, quote.GetAttributeValue<EntityReference>("gsc_dealerid").Id)
                     : null;
-                _tracingService.Trace("y");
                 salesOrderEntity["gsc_branchid"] = quote.Contains("gsc_branchid")
                     ? new EntityReference(quote.GetAttributeValue<EntityReference>("gsc_branchid").LogicalName, quote.GetAttributeValue<EntityReference>("gsc_branchid").Id)
                     : null;
-                _tracingService.Trace("z");
                 salesOrderEntity["gsc_recordownerid"] = quote.Contains("gsc_portaluserid")
                     ? new EntityReference(quote.GetAttributeValue<EntityReference>("gsc_recordownerid").LogicalName, new Guid(quote.GetAttributeValue<String>("gsc_portaluserid")))
                     : null;
-                _tracingService.Trace("1");
             }
 
             //Populate Customer Information
@@ -705,7 +699,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 for (int x = 0; x <= chattelFeeRecordsCount - 2; x++)
                 {
                     //if (unitPriceAmount >= (Decimal)chattelFeeRecords.Entities[x].GetAttributeValue<Money>("gsc_loanamount").Value && unitPriceAmount <= (Decimal)chattelFeeRecords.Entities[x+1].GetAttributeValue<Money>("gsc_loanamount").Value)
-                    if (Enumerable.Range(((Int32)(Decimal)chattelFeeRecords.Entities[x].GetAttributeValue<Money>("gsc_loanamount").Value), ((Int32)(Decimal)chattelFeeRecords.Entities[x + 1].GetAttributeValue<Money>("gsc_loanamount").Value)).Contains((Int32)unitPriceAmount))
+                    if (Enumerable.Range((Int32)(Decimal)chattelFeeRecords.Entities[x].GetAttributeValue<Money>("gsc_loanamount").Value, (Int32)(Decimal)chattelFeeRecords.Entities[x + 1].GetAttributeValue<Money>("gsc_loanamount").Value).Contains((Int32)unitPriceAmount))
                     {
                         salesOrderEntity["gsc_chattelfee"] = new Money((Decimal)chattelFeeRecords.Entities[x].GetAttributeValue<Money>("gsc_chattelfeeamount").Value);
                         salesOrderEntity["gsc_chattelfeeeditable"] = new Money((Decimal)chattelFeeRecords.Entities[x].GetAttributeValue<Money>("gsc_chattelfeeamount").Value);
@@ -1440,7 +1434,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
 
             _tracingService.Trace("WithAFDiscount Computed.");
 
-            return ((PV * (rate / 12)) / (1 - Math.Pow((1 + (rate / 12)), (-1 * term))));
+            return (PV * (rate / 12)) / (1 - Math.Pow(1 + (rate / 12), -1 * term));
         }
 
         /*Monthly Amortization =  (Total Amount Financed x (1+AOR)/ Financing Terms
@@ -1989,7 +1983,7 @@ namespace GSC.Rover.DMS.BusinessLogic.SalesOrder
                 //Financing
                 if (paymentMode == 100000001)
                 {
-                    sales = (netPrice) / (Decimal)(1 + vehicleTaxRate);
+                    sales = netPrice / (Decimal)(1 + vehicleTaxRate);
                 }
                 else
                     sales = (netPrice + otherChargesAmount + insuranceCharge) / (Decimal)(1 + vehicleTaxRate);
